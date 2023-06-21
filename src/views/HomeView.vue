@@ -42,12 +42,14 @@
               </v-card-title>
 
               <v-card-text>
-                <v-form>
+                <v-form ref="form" v-model="valid">
                   <v-container>
+                    
                     <v-row>
+                      
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
-                          v-model="user.nome"
+                          v-model="name"
                           label="Nome"
                           required
                         ></v-text-field>
@@ -55,28 +57,32 @@
 
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
-                          v-model="user.email"
+                          v-model="email"
                           label="E-mail"
+                          :rules="emailRules"
                           required
                         ></v-text-field>
                       </v-col>
 
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
-                          v-model="user.cpf"
+                          v-model="cpf"
                           label="CPF"
                           required
+                          :rules="cpfRules"
                         ></v-text-field>
                       </v-col>
 
                       <v-col cols="12" sm="6" md="4">
                         <v-text-field
-                          v-model="user.dataNascimento"
+                          v-model="dataNascimento"
                           label="Data de nascimento"
                           required
                         ></v-text-field>
                       </v-col>
+                    
                     </v-row>
+                  
                   </v-container>
                 </v-form>
               </v-card-text>
@@ -84,7 +90,7 @@
               <v-card-actions>
                 <v-spacer></v-spacer>
 
-                <v-btn color="primary">Salvar</v-btn>
+                <v-btn color="primary" @click="salvar">Salvar</v-btn>
               </v-card-actions>
             </v-card>
           </v-col>
@@ -107,38 +113,49 @@
 
                   <v-card-text>
                     <v-container>
-                      <v-row>
-                        <v-col cols="12" sm="6" md="4">
-                          <v-text-field
-                            v-model="user.email"
-                            label="E-mail"
-                            required
-                          ></v-text-field>
-                        </v-col>
+                      
+                        <v-row>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field
+                              v-model="user.name"
+                              label="Nome"
+                              required
+                            ></v-text-field>
+                          </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field
+                              v-model="user.email"
+                              label="E-mail"
+                              
+                              required
+                            ></v-text-field>
+                          </v-col>
 
-                        <v-col cols="12" sm="6" md="4">
-                          <v-text-field
-                            v-model="user.cpf"
-                            label="CPF"
-                            required
-                          ></v-text-field>
-                        </v-col>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field
+                              v-model="user.cpf"
+                              label="CPF"
+                              
+                              required
+                            ></v-text-field>
+                          </v-col>
 
-                        <v-col cols="12" sm="6" md="4">
-                          <v-text-field
-                            v-model="user.dataNascimento"
-                            label="Data de nascimento"
-                            required
-                          ></v-text-field>
-                        </v-col>
-                      </v-row>
+                          <v-col cols="12" sm="6" md="4">
+                            <v-text-field
+                              v-model="user.dataNascimento"
+                              label="Data de nascimento"
+                              required
+                            ></v-text-field>
+                          </v-col>
+                        </v-row>
+                      
                     </v-container>
                   </v-card-text>
 
                   <v-card-actions>
                     <v-spacer></v-spacer>
 
-                    <v-btn color="primary">Apagar</v-btn>
+                    <v-btn color="primary" @click="apagar(i)">Apagar</v-btn>
                   </v-card-actions>
                 </v-card>
               </v-card-text>
@@ -151,11 +168,21 @@
 </template>
 
 <script>
-import firebase from "firebase";
+// import firebase from "firebase";
 import { useCounterStore } from "../store";
+import axios from "axios";
 export default {
   data: () => ({
     drawer: null,
+    valid: true,
+    emailRules: [
+      (v) => !!v || "E-mail é obrigatório",
+      (v) => /.+@.+\..+/.test(v) || "E-mail deve ser válido",
+    ],
+    cpfRules: [
+      (v) => !!v || "CPF é obrigatório",
+      (v) => v.length == 11 || "CPF deve ter 11 dígitos",
+    ],
     user: {
       name: null,
       email: null,
@@ -180,18 +207,57 @@ export default {
         dataNascimento: "01/01/2000",
       },
     ],
+    name: null,
+    email: null,
+    cpf: null,
+    dataNascimento: null,
   }),
   created() {
-    
+    //get https://ava3-dfa82-default-rtdb.firebaseio.com
+    this.inicialize();
   },
   methods: {
-    signIn() {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      firebase
-        .auth()
-        .signInWithPopup(provider)
-        .then((result) => {
-          useCounterStore().setUser(result.user);
+    salvar() {
+      if (this.$refs.form.validate()) {
+      axios
+        .post("https://ava3-dfa82-default-rtdb.firebaseio.com/usuarios.json", {
+          name: this.name,
+          email: this.email,
+          cpf: this.cpf,
+          dataNascimento: this.dataNascimento,
+        })
+        .then((response) => {
+          console.log(response.data);
+          this.inicialize();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+      }
+    },
+    apagar(i) {
+      console.log(i);
+      axios
+        .delete(
+          "https://ava3-dfa82-default-rtdb.firebaseio.com/usuarios/" +
+            i +
+            ".json"
+        )
+        .then((response) => {
+          console.log(response.data);
+          this.inicialize();
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+
+    inicialize() {
+      axios
+        .get("https://ava3-dfa82-default-rtdb.firebaseio.com/usuarios.json")
+        .then((response) => {
+          console.log(response.data);
+          this.users = response.data;
         })
         .catch((error) => {
           console.log(error);
