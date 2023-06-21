@@ -13,11 +13,6 @@
 
       <v-list density="compact" nav>
         <v-list-item
-          prepend-icon="mdi-calendar"
-          title="Eventos"
-          value="eventos"
-        ></v-list-item>
-        <v-list-item
           prepend-icon="mdi-account-multiple"
           title="Usuarios"
           value="usuarios"
@@ -28,7 +23,7 @@
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
 
-      <v-toolbar-title>Eventos</v-toolbar-title>
+      <v-toolbar-title>Usuarios</v-toolbar-title>
     </v-app-bar>
 
     <v-main>
