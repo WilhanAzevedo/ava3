@@ -1,11 +1,35 @@
 import { createRouter, createWebHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
+import LoginView from "../views/LoginView.vue";
+import CadastroView from "../views/CadastroView.vue";
+// import auth from "../middleware";
+import { useCounterStore } from "../store";
 
 const routes = [
   {
     path: "/",
+    name: "login",
+    component: LoginView,
+  },
+  {
+    path: "/cadastro",
+    name: "cadastro",
+    component: CadastroView,
+  },
+  {
+    path: "/home",
     name: "home",
     component: HomeView,
+    beforeEnter: (to, from, next) => {
+      const store = useCounterStore();
+      console.log(store.getAuth);
+      if (store.getAuth) {
+        console.log("auth");
+        return next();
+      } else {
+        return next({ name: "login" });
+      }
+    }
   },
   {
     path: "/about",
